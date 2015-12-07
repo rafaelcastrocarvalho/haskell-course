@@ -1,4 +1,5 @@
 import Data.Char
+import Control.Applicative
 
 ys = [1,2,3,4,5,6]
 
@@ -85,4 +86,88 @@ compose = foldr (.) id
 
 sumsqreven = compose [map (^ 2), filter even]
 
+data Expr' = Val' Int | Div' Expr' Expr'
+data Maybe' a = Nothing' | Just' a
 
+safediv     :: Int -> Int -> Maybe' Int
+safediv n m =  if m == 0 then Nothing' else Just' (n `div` m)
+
+eval'            :: Expr' -> Maybe' Int
+eval' (Val' n)   =  Just' n
+eval' (Div' x y) =  do n <- eval' x
+                       m <- eval' y
+                       safediv n m
+
+--eval' (Div' x y) =  eval' x >>== (\n -> eval' y >>== (\m -> safediv n m))
+
+--eval' (Div' x y) =  apply' f (eval' x `seqn'` eval' y)
+--                    where f (n,m) = safediv n m
+
+--eval' (Div' x y) =  case eval' x of
+--                      Nothing' -> Nothing'
+--                      Just' n  -> case eval' y of
+--                                    Nothing' -> Nothing'
+--                                    Just' m  -> safediv n m
+
+seqn' :: Maybe' a -> Maybe' b  -> Maybe' (a, b)
+seqn'    Nothing'    _         =  Nothing'
+seqn'    _           Nothing'  =  Nothing'
+seqn'    x           y         =  do n <- x
+                                     m <- y
+                                     Just' (n, m)
+--seqn'  x           y         =  x >>= (\n -> y >>= (\m -> Just' (n, m) ))
+--seqn' (Just' x)    (Just' y) = Just' (x, y)
+
+apply'             :: (a -> Maybe' b) -> Maybe' a -> Maybe' b
+apply' f Nothing'  =  Nothing'
+apply' f (Just' x) =  f x
+
+
+instance Monad Maybe' where
+  -- return :: a -> Maybe' a
+  return x  =  Just' x
+
+  -- (>>=) :: Maybe' a -> (a -> Maybe' b) -> Maybe' b
+  Nothing'  >>= _ = Nothing'
+  (Just' x) >>= f = f x
+
+pairs               :: [a] -> [b] -> [(a,b)]
+pairs xs ys         =  do x <- xs
+                          y <- ys
+                          return (x,y)
+--pairs xs ys       =  xs >>==     (\x -> ys >>==       (\y -> return (x, y)))
+--pairs xs ys       =  concat (map (\x -> ys >>==       (\y -> return (x, y))       ) xs)
+--pairs xs ys       =  concat (map (\x -> (concat ( map (\y -> return (x, y)) ys )) ) xs)
+--pairs [1,2] [3,4] =                      concat ( [[(1,3)], [(1,4)]]           )
+--                                         [(1,3), (1,4)]
+--
+--                                         concat ( [[(2,3)], [(2,4)]]           )
+--                                         [(2,3], (2,4)]
+--
+--                     concat ( [[(1,3), (1,4)], [(2,3], (2,4)]] )
+--                     [(1,3), (1,4), (2,3], (2,4)]
+
+(>>==)    :: [a] -> (a -> [b]) -> [b]
+xs >>== f =  concat (map f xs)
+
+f1 = do x <- [1,2]
+        [x, x+1] -- this is monad, right?
+
+f2 = do x <- [1,2]
+        return [x, x+1]
+
+
+type State = Int
+
+data ST a = S (State -> (a, State))
+
+apply         :: ST a -> State -> (a,State)
+apply (S f) x =  f x
+
+type Post = String
+
+findPost    :: Int -> Maybe Post
+findPost x  =  if x == 1 then (Just "The Post") else Nothing
+
+getPostTitle   :: Post -> String
+getPostTitle p = p
