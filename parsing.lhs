@@ -13,10 +13,11 @@ The monad of parsers
 >
 > instance Monad Parser where
 >    return v                   =  P (\inp -> [(v,inp)])
->    p >>= f                    =  P (\inp -> case parse p inp of
-                                                   []         -> []
-                                                   [(v, out)] -> parse (f v) out)
->
+>    p >>= f                    =  P (\inp ->
+>                                       case parse p inp of
+>                                           [] -> []
+>                                           [(v, out)] -> parse (f v) out)
+
 > instance MonadPlus Parser where
 >    mzero                      =  P (\inp -> [])
 >    p `mplus` q                =  P (\inp -> case parse p inp of
@@ -124,3 +125,10 @@ Ignoring spacing
 >
 > symbol                        :: String -> Parser String
 > symbol xs                     =  token (string xs)
+
+
+> p :: Parser (Char,Char)
+> p = do x <- item
+>        item
+>        y <- item
+>        return (x,y)
