@@ -3,8 +3,8 @@ import Control.Applicative
 
 ys = [1,2,3,4,5,6]
 
-find      :: Eq a => a -> [(a, b)] -> [b]
-find k t  =  [v | (k',v) <- t, k == k']
+--find      :: Eq a => a -> [(a, b)] -> [b]
+--find k t  =  [v | (k',v) <- t, k == k']
 
 positions       ::  Eq a => a -> [a] -> [Int]
 positions x xs  =   [i | (x',i) <- zip xs [0 .. n], x == x']
@@ -171,3 +171,37 @@ findPost x  =  if x == 1 then (Just "The Post") else Nothing
 
 getPostTitle   :: Post -> String
 getPostTitle p = p
+
+type Assoc k v = [(k, v)]
+
+find     :: Eq k => k -> Assoc k v -> v
+find k t =  head [v | (k', v) <- t, k == k']
+
+type Subst = Assoc Char Bool
+
+data Prop = AConst Bool
+          | Var Char
+          | Not Prop
+          | And Prop Prop
+          | Imply Prop Prop
+
+s = [('A', False), ('B', True)]
+
+eval               :: Subst -> Prop -> Bool
+eval _ (AConst b)  =  b
+eval s (Var x)     = find x s
+eval s (Not p)     = not (eval s p)
+eval s (And p q)   = eval s p && eval s q
+eval s (Imply p q) = eval s p <= eval s q
+
+vars              :: Prop -> [Char]
+vars (AConst _)   =  []
+vars (Var x)      =  [x]
+vars (Not p)      =  vars p
+vars (And p q)    =  vars p ++ vars q
+vars (Imply p q)  =  vars p ++ vars q
+
+bools         :: Int -> [[Bool]]
+bools 0       =  [[]]
+bools (n + 1) =  map (False:) bss ++ map (True:) bss
+                 where bss = bools n
