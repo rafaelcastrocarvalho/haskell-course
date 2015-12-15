@@ -10,7 +10,7 @@ Expressions
 -----------
 
 > data Op                       =  Add | Sub | Mul | Div
-> 
+>
 > valid                         :: Op -> Int -> Int -> Bool
 > valid Add _ _                 =  True
 > valid Sub x y                 =  x > y
@@ -28,7 +28,7 @@ Expressions
 > values                        :: Expr -> [Int]
 > values (Val n)                =  [n]
 > values (App _ l r)            =  values l ++ values r
->  
+>
 > eval                          :: Expr -> [Int]
 > eval (Val n)                  =  [n | n > 0]
 > eval (App o l r)              =  [apply o x y | x <- eval l
@@ -46,7 +46,7 @@ Combinatorial functions
 > interleave                    :: a -> [a] -> [[a]]
 > interleave x []               =  [[x]]
 > interleave x (y:ys)           =  (x:y:ys) : map (y:) (interleave x ys)
-> 
+>
 > perms                         :: [a] -> [[a]]
 > perms []                      =  [[]]
 > perms (x:xs)                  =  concat (map (interleave x) (perms xs))
@@ -65,7 +65,7 @@ Brute force solution
 
 > split                         :: [a] -> [([a],[a])]
 > split                         =  undefined
-> 
+>
 > exprs                         :: [Int] -> [Expr]
 > exprs []                      =  []
 > exprs [n]                     =  [Val n]
@@ -73,13 +73,13 @@ Brute force solution
 >                                     , l       <- exprs ls
 >                                     , r       <- exprs rs
 >                                     , e       <- combine l r]
-> 
+>
 > combine                       :: Expr -> Expr -> [Expr]
 > combine l r                   =  [App o l r | o <- ops]
->  
+>
 > ops                           :: [Op]
 > ops                           =  [Add,Sub,Mul,Div]
-> 
+>
 > solutions                     :: [Int] -> Int -> [Expr]
 > solutions ns n                =  [e | ns' <- choices ns
 >                                     , e   <- exprs ns'
@@ -89,7 +89,7 @@ Combining generation and evaluation
 -----------------------------------
 
 > type Result                   =  (Expr,Int)
-> 
+>
 > results                       :: [Int] -> [Result]
 > results []                    =  []
 > results [n]                   =  [(Val n,n) | n > 0]
@@ -97,11 +97,11 @@ Combining generation and evaluation
 >                                       , lx      <- results ls
 >                                       , ry      <- results rs
 >                                       , res     <- combine' lx ry]
-> 
+>
 > combine'                      :: Result -> Result -> [Result]
 > combine' (l,x) (r,y)          =  [(App o l r, apply o x y) | o <- ops
 >                                                            , valid o x y]
-> 
+>
 > solutions'                    :: [Int] -> Int -> [Expr]
 > solutions' ns n               =  [e | ns'   <- choices ns
 >                                     , (e,m) <- results ns'
@@ -115,7 +115,7 @@ Exploiting numeric properties
 > valid' Sub x y                =  x > y
 > valid' Mul x y                =  x /= 1 && y /= 1 && x <= y
 > valid' Div x y                =  y /= 1 && x `mod` y == 0
-> 
+>
 > results'                      :: [Int] -> [Result]
 > results' []                   =  []
 > results' [n]                  =  [(Val n,n) | n > 0]
@@ -123,11 +123,11 @@ Exploiting numeric properties
 >                                       , lx      <- results' ls
 >                                       , ry      <- results' rs
 >                                       , res     <- combine'' lx ry]
-> 
+>
 > combine''                     :: Result -> Result -> [Result]
 > combine'' (l,x) (r,y)         =  [(App o l r, apply o x y) | o <- ops
 >                                                            , valid' o x y]
-> 
+>
 > solutions''                   :: [Int] -> Int -> [Expr]
 > solutions'' ns n              =  [e | ns'   <- choices ns
 >                                     , (e,m) <- results' ns'
@@ -141,18 +141,18 @@ Interactive version for testing
 >    show Sub                   =  "-"
 >    show Mul                   =  "*"
 >    show Div                   =  "/"
-> 
+>
 > instance Show Expr where
 >    show (Val n)               =  show n
 >    show (App o l r)           =  bracket l ++ show o ++ bracket r
 >                                  where
 >                                     bracket (Val n) = show n
 >                                     bracket e       = "(" ++ show e ++ ")"
-> 
+>
 > showtime                      :: Integer -> String
 > showtime t                    =  showFFloat (Just 3)
 >                                     (fromIntegral t / (10^12)) " seconds"
-> 
+>
 > display                       :: [Expr] -> IO ()
 > display es                    =  do t0 <- getCPUTime
 >                                     if null es then
@@ -179,7 +179,7 @@ Interactive version for testing
 >                                                 t3 <- getCPUTime
 >                                                 putStr (showtime ((t1 - t0) + (t3 - t2)))
 >                                     putStr ".\n\n"
-> 
+>
 > main                          :: IO ()
 > main                          =  do hSetBuffering stdout NoBuffering
 >                                     putStrLn "\nCOUNTDOWN NUMBERS GAME SOLVER"
