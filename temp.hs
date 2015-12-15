@@ -196,7 +196,7 @@ eval s (Imply p q) = eval s p <= eval s q
 
 vars              :: Prop -> [Char]
 vars (AConst _)   =  []
-vars (Var x)      =  [x]
+vars (Var x)     =  [x]
 vars (Not p)      =  vars p
 vars (And p q)    =  vars p ++ vars q
 vars (Imply p q)  =  vars p ++ vars q
@@ -205,3 +205,15 @@ bools         :: Int -> [[Bool]]
 bools 0       =  [[]]
 bools (n + 1) =  map (False:) bss ++ map (True:) bss
                  where bss = bools n
+
+
+removeone :: Eq a => a -> [a] -> [a]
+removeone x [] = []
+removeone x (y : ys)
+  | x == y = ys
+  | otherwise = y : removeone x ys
+
+isChoice :: Eq a => [a] -> [a] -> Bool
+isChoice [] _ = True
+isChoice (x : xs) [] = False
+isChoice (x : xs) ys = elem x ys && isChoice xs (removeone x ys)
